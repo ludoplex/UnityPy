@@ -164,9 +164,7 @@ def exportTextAsset(obj: TextAsset, fp: str, extension: str = ".txt") -> List[in
 def exportFont(obj: Font, fp: str, extension: str = "") -> List[int]:
     # TODO - export glyphs
     if obj.m_FontData:
-        extension = ".ttf"
-        if obj.m_FontData[0:4] == b"OTTO":
-            extension = ".otf"
+        extension = ".otf" if obj.m_FontData[:4] == b"OTTO" else ".ttf"
         with open(f"{fp}{extension}", "wb") as f:
             f.write(obj.m_FontData)
     return [(obj.assets_file, obj.path_id)]
@@ -199,17 +197,12 @@ def exportMonoBehaviour(
             "utf8", errors="surrogateescape"
         )
     elif isinstance(obj, MonoBehaviour):
-        # no set typetree
-        # check if we have a script
-        script = obj.m_Script
-        if script:
+        if script := obj.m_Script:
             # looks like we have a script
             script = script.read()
-            # check if there is a locally stored typetree for it
-            nodes = MONOBEHAVIOUR_TYPETREES.get(script.m_AssemblyName, {}).get(
-                script.m_ClassName, None
-            )
-            if nodes:
+            if nodes := MONOBEHAVIOUR_TYPETREES.get(
+                script.m_AssemblyName, {}
+            ).get(script.m_ClassName, None):
                 # we have a typetree
                 # adjust the name
                 # name = (
@@ -309,14 +302,13 @@ def crawl_obj(obj: Object, ret: dict = None) -> Dict[int, Union[Object, PPtr]]:
     if not ret:
         ret = {}
 
-    if isinstance(obj, PPtr):
-        if obj.path_id == 0 and obj.file_id == 0 and obj.index == -2:
-            return ret
-        try:
-            obj = obj.read()
-        except AttributeError:
-            return ret
-    else:
+    if not isinstance(obj, PPtr):
+        return ret
+    if obj.path_id == 0 and obj.file_id == 0 and obj.index == -2:
+        return ret
+    try:
+        obj = obj.read()
+    except AttributeError:
         return ret
     ret[obj.path_id] = obj
 

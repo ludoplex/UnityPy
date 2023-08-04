@@ -27,107 +27,59 @@ class Matrix4x4:
             return False
         print()
 
-    def __mul__(lhs, rhs):
+    def __mul__(self, rhs):
         res = Matrix4x4([0] * 16)
         res.M00 = (
-            lhs.M00 * rhs.M00
-            + lhs.M01 * rhs.M10
-            + lhs.M02 * rhs.M20
-            + lhs.M03 * rhs.M30
-        )
+            (self.M00 * rhs.M00 + self.M01 * rhs.M10) + self.M02 * rhs.M20
+        ) + self.M03 * rhs.M30
         res.M01 = (
-            lhs.M00 * rhs.M01
-            + lhs.M01 * rhs.M11
-            + lhs.M02 * rhs.M21
-            + lhs.M03 * rhs.M31
-        )
+            (self.M00 * rhs.M01 + self.M01 * rhs.M11) + self.M02 * rhs.M21
+        ) + self.M03 * rhs.M31
         res.M02 = (
-            lhs.M00 * rhs.M02
-            + lhs.M01 * rhs.M12
-            + lhs.M02 * rhs.M22
-            + lhs.M03 * rhs.M32
-        )
+            (self.M00 * rhs.M02 + self.M01 * rhs.M12) + self.M02 * rhs.M22
+        ) + self.M03 * rhs.M32
         res.M03 = (
-            lhs.M00 * rhs.M03
-            + lhs.M01 * rhs.M13
-            + lhs.M02 * rhs.M23
-            + lhs.M03 * rhs.M33
-        )
+            (self.M00 * rhs.M03 + self.M01 * rhs.M13) + self.M02 * rhs.M23
+        ) + self.M03 * rhs.M33
 
         res.M10 = (
-            lhs.M10 * rhs.M00
-            + lhs.M11 * rhs.M10
-            + lhs.M12 * rhs.M20
-            + lhs.M13 * rhs.M30
-        )
+            (self.M10 * rhs.M00 + self.M11 * rhs.M10) + self.M12 * rhs.M20
+        ) + self.M13 * rhs.M30
         res.M11 = (
-            lhs.M10 * rhs.M01
-            + lhs.M11 * rhs.M11
-            + lhs.M12 * rhs.M21
-            + lhs.M13 * rhs.M31
-        )
+            (self.M10 * rhs.M01 + self.M11 * rhs.M11) + self.M12 * rhs.M21
+        ) + self.M13 * rhs.M31
         res.M12 = (
-            lhs.M10 * rhs.M02
-            + lhs.M11 * rhs.M12
-            + lhs.M12 * rhs.M22
-            + lhs.M13 * rhs.M32
-        )
+            (self.M10 * rhs.M02 + self.M11 * rhs.M12) + self.M12 * rhs.M22
+        ) + self.M13 * rhs.M32
         res.M13 = (
-            lhs.M10 * rhs.M03
-            + lhs.M11 * rhs.M13
-            + lhs.M12 * rhs.M23
-            + lhs.M13 * rhs.M33
-        )
+            (self.M10 * rhs.M03 + self.M11 * rhs.M13) + self.M12 * rhs.M23
+        ) + self.M13 * rhs.M33
 
         res.M20 = (
-            lhs.M20 * rhs.M00
-            + lhs.M21 * rhs.M10
-            + lhs.M22 * rhs.M20
-            + lhs.M23 * rhs.M30
-        )
+            (self.M20 * rhs.M00 + self.M21 * rhs.M10) + self.M22 * rhs.M20
+        ) + self.M23 * rhs.M30
         res.M21 = (
-            lhs.M20 * rhs.M01
-            + lhs.M21 * rhs.M11
-            + lhs.M22 * rhs.M21
-            + lhs.M23 * rhs.M31
-        )
+            (self.M20 * rhs.M01 + self.M21 * rhs.M11) + self.M22 * rhs.M21
+        ) + self.M23 * rhs.M31
         res.M22 = (
-            lhs.M20 * rhs.M02
-            + lhs.M21 * rhs.M12
-            + lhs.M22 * rhs.M22
-            + lhs.M23 * rhs.M32
-        )
+            (self.M20 * rhs.M02 + self.M21 * rhs.M12) + self.M22 * rhs.M22
+        ) + self.M23 * rhs.M32
         res.M23 = (
-            lhs.M20 * rhs.M03
-            + lhs.M21 * rhs.M13
-            + lhs.M22 * rhs.M23
-            + lhs.M23 * rhs.M33
-        )
+            (self.M20 * rhs.M03 + self.M21 * rhs.M13) + self.M22 * rhs.M23
+        ) + self.M23 * rhs.M33
 
         res.M30 = (
-            lhs.M30 * rhs.M00
-            + lhs.M31 * rhs.M10
-            + lhs.M32 * rhs.M20
-            + lhs.M33 * rhs.M30
-        )
+            (self.M30 * rhs.M00 + self.M31 * rhs.M10) + self.M32 * rhs.M20
+        ) + self.M33 * rhs.M30
         res.M31 = (
-            lhs.M30 * rhs.M01
-            + lhs.M31 * rhs.M11
-            + lhs.M32 * rhs.M21
-            + lhs.M33 * rhs.M31
-        )
+            (self.M30 * rhs.M01 + self.M31 * rhs.M11) + self.M32 * rhs.M21
+        ) + self.M33 * rhs.M31
         res.M32 = (
-            lhs.M30 * rhs.M02
-            + lhs.M31 * rhs.M12
-            + lhs.M32 * rhs.M22
-            + lhs.M33 * rhs.M32
-        )
+            (self.M30 * rhs.M02 + self.M31 * rhs.M12) + self.M32 * rhs.M22
+        ) + self.M33 * rhs.M32
         res.M33 = (
-            lhs.M30 * rhs.M03
-            + lhs.M31 * rhs.M13
-            + lhs.M32 * rhs.M23
-            + lhs.M33 * rhs.M33
-        )
+            (self.M30 * rhs.M03 + self.M31 * rhs.M13) + self.M32 * rhs.M23
+        ) + self.M33 * rhs.M33
 
         return res
 

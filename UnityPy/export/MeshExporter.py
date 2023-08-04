@@ -18,18 +18,15 @@ def export_mesh_obj(m_Mesh, material_names: list = None):
     if not m_Mesh.m_Vertices:
         return False
 
-    c = 3
-    if len(m_Mesh.m_Vertices) == m_Mesh.m_VertexCount * 4:
-        c = 4
-
-    for v in range(int(m_Mesh.m_VertexCount)):
-        sb.append(
-            "v {0:.7G} {1:.7G} {2:.7G}\r\n".format(
-                -m_Mesh.m_Vertices[v * c],
-                m_Mesh.m_Vertices[v * c + 1],
-                m_Mesh.m_Vertices[v * c + 2],
-            ).replace("nan", "0")
-        )
+    c = 4 if len(m_Mesh.m_Vertices) == m_Mesh.m_VertexCount * 4 else 3
+    sb.extend(
+        "v {0:.7G} {1:.7G} {2:.7G}\r\n".format(
+            -m_Mesh.m_Vertices[v * c],
+            m_Mesh.m_Vertices[v * c + 1],
+            m_Mesh.m_Vertices[v * c + 2],
+        ).replace("nan", "0")
+        for v in range(int(m_Mesh.m_VertexCount))
+    )
     # endregion
 
     # region UV
@@ -39,12 +36,12 @@ def export_mesh_obj(m_Mesh, material_names: list = None):
         elif len(m_Mesh.m_UV0) == m_Mesh.m_VertexCount * 3:
             c = 3
 
-        for v in range(int(m_Mesh.m_VertexCount)):
-            sb.append(
-                "vt {0:.7G} {1:.7G}\r\n".format(
-                    m_Mesh.m_UV0[v * c], m_Mesh.m_UV0[v * c + 1]
-                ).replace("nan", "0")
-            )
+        sb.extend(
+            "vt {0:.7G} {1:.7G}\r\n".format(
+                m_Mesh.m_UV0[v * c], m_Mesh.m_UV0[v * c + 1]
+            ).replace("nan", "0")
+            for v in range(int(m_Mesh.m_VertexCount))
+        )
     # endregion
 
     # region Normals
@@ -54,14 +51,14 @@ def export_mesh_obj(m_Mesh, material_names: list = None):
         elif len(m_Mesh.m_Normals) == m_Mesh.m_VertexCount * 4:
             c = 4
 
-        for v in range(int(m_Mesh.m_VertexCount)):
-            sb.append(
-                "vn {0:.7G} {1:.7G} {2:.7G}\r\n".format(
-                    -m_Mesh.m_Normals[v * c],
-                    m_Mesh.m_Normals[v * c + 1],
-                    m_Mesh.m_Normals[v * c + 2],
-                ).replace("nan", "0")
-            )
+        sb.extend(
+            "vn {0:.7G} {1:.7G} {2:.7G}\r\n".format(
+                -m_Mesh.m_Normals[v * c],
+                m_Mesh.m_Normals[v * c + 1],
+                m_Mesh.m_Normals[v * c + 2],
+            ).replace("nan", "0")
+            for v in range(int(m_Mesh.m_VertexCount))
+        )
     # endregion
 
     # region Face
@@ -72,14 +69,14 @@ def export_mesh_obj(m_Mesh, material_names: list = None):
             sb.append(f"usemtl {material_names[i]}\r\n")
         indexCount = m_Mesh.m_SubMeshes[i].indexCount
         end = sum + indexCount // 3
-        for f in range(sum, end):
-            sb.append(
-                "f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\r\n".format(
-                    m_Mesh.m_Indices[f * 3 + 2] + 1,
-                    m_Mesh.m_Indices[f * 3 + 1] + 1,
-                    m_Mesh.m_Indices[f * 3] + 1,
-                )
+        sb.extend(
+            "f {0}/{0}/{0} {1}/{1}/{1} {2}/{2}/{2}\r\n".format(
+                m_Mesh.m_Indices[f * 3 + 2] + 1,
+                m_Mesh.m_Indices[f * 3 + 1] + 1,
+                m_Mesh.m_Indices[f * 3] + 1,
             )
+            for f in range(sum, end)
+        )
         sum = end
     # endregion
     return "".join(sb)

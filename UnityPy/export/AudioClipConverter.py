@@ -91,9 +91,9 @@ def extract_audioclip_samples(audio) -> dict:
 
     magic = memoryview(audio.m_AudioData)[:4]
     if magic == b"OggS":
-        return {"%s.ogg" % audio.name: audio.m_AudioData}
+        return {f"{audio.name}.ogg": audio.m_AudioData}
     elif magic == b"RIFF":
-        return {"%s.wav" % audio.name: audio.m_AudioData}
+        return {f"{audio.name}.wav": audio.m_AudioData}
     return dump_samples(audio)
 
 
@@ -119,10 +119,7 @@ def dump_samples(clip):
     # iterate over subsounds
     samples = {}
     for i in range(sound.num_subsounds):
-        if i > 0:
-            filename = "%s-%i.wav" % (clip.name, i)
-        else:
-            filename = "%s.wav" % clip.name
+        filename = "%s-%i.wav" % (clip.name, i) if i > 0 else f"{clip.name}.wav"
         subsound = sound.get_subsound(i)
         samples[filename] = subsound_to_wav(subsound)
         subsound.release()

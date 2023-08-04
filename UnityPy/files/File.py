@@ -38,8 +38,7 @@ class File(object):
 
         for f in self.files.values():
             if isinstance(f, (BundleFile.BundleFile, WebFile.WebFile)):
-                for asset in f.get_assets():
-                    yield asset
+                yield from f.get_assets()
             elif isinstance(f, SerializedFile.SerializedFile):
                 yield f
 
@@ -59,11 +58,9 @@ class File(object):
     def get_objects(self):
         for f in self.files.values():
             if isinstance(f, (BundleFile.BundleFile, WebFile.WebFile)):
-                for obj in f.objects:
-                    yield obj
+                yield from f.objects
             elif isinstance(f, SerializedFile.SerializedFile):
-                for obj in f.objects.values():
-                    yield obj
+                yield from f.objects.values()
             elif isinstance(f, ObjectReader.ObjectReader):
                 yield f
 

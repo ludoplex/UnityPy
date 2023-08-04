@@ -65,9 +65,7 @@ class PPtr:
     @property
     def type(self):
         obj = self.get_obj()
-        if obj is None:
-            return ClassIDType.UnknownType
-        return obj.type
+        return ClassIDType.UnknownType if obj is None else obj.type
 
     @property
     def external_name(self):
@@ -87,4 +85,4 @@ class PPtr:
         )
 
     def __bool__(self):
-        return True if self.get_obj() else False
+        return bool(self.get_obj())

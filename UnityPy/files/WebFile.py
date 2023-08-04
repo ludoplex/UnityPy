@@ -65,32 +65,30 @@ class WebFile(File.File):
             files = self.files
         if not packer:
             packer = self.packer
-        
+
         # get raw data
         files = {
             name: f.bytes if isinstance(f, EndianBinaryReader) else f.save()
             for name, f in files.items()
         }
-        
+
         # create writer
         writer = EndianBinaryWriter(endian="<")
         # signature
         writer.write_string_to_null(signature)
-        
+
         # data offset
         offset = sum(
             [
-                writer.Position,  # signature
-                sum(
-                    len(path.encode("utf-8")) for path in files.keys()
-                ),  # path of each file
-                4 * 3 * len(files),  # 3 ints per file
-                4,  # offset int
+                writer.Position,
+                sum(len(path.encode("utf-8")) for path in files),
+                4 * 3 * len(files),
+                4,
             ]
         )
-        
+
         writer.write_int(offset)
-        
+
         # 1. file headers
         for name, data in files.items():
             # offset
@@ -103,15 +101,15 @@ class WebFile(File.File):
             enc_path = name.encode("utf-8")
             writer.write_int(len(enc_path))
             writer.write(enc_path)
-        
+
         # 2. file data
         for data in files.values():
             writer.write(data)
-        
-        if packer == "gzip":
-            return CompressionHelper.compress_gzip(writer.bytes)
-        elif packer == "brotli":
+
+        if packer == "brotli":
             return CompressionHelper.compress_brotli(writer.bytes)
+        elif packer == "gzip":
+            return CompressionHelper.compress_gzip(writer.bytes)
         else:
             return writer.bytes
 

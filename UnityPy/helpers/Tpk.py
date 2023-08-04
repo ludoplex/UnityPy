@@ -29,7 +29,7 @@ def get_typetree_nodes(class_id: int, version: tuple):
         UnityVersion.fromList(*version)
     )
     if class_info is None:
-        raise ValueError("Could not find class info for class id {}".format(class_id))
+        raise ValueError(f"Could not find class info for class id {class_id}")
 
     nodes = generate_flat_nodes(class_info)
     NODES_CACHE[key] = nodes

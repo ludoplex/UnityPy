@@ -17,7 +17,7 @@ class EndianBinaryWriter:
         elif isinstance(input_, io.IOBase):
             self.stream = input_
         else:
-            raise ValueError("Invalid input type - %s." % type(input_))
+            raise ValueError(f"Invalid input type - {type(input_)}.")
         self.endian = endian
         self.Position = self.stream.tell()
 
@@ -36,7 +36,6 @@ class EndianBinaryWriter:
 
     def dispose(self):
         self.stream.close()
-        pass
 
     def write(self, *args):
         if self.Position != self.stream.tell():
@@ -46,40 +45,40 @@ class EndianBinaryWriter:
         return ret
 
     def write_byte(self, value: int):
-        self.write(pack(self.endian + "b", value))
+        self.write(pack(f"{self.endian}b", value))
 
     def write_u_byte(self, value: int):
-        self.write(pack(self.endian + "B", value))
+        self.write(pack(f"{self.endian}B", value))
 
     def write_bytes(self, value: bytes):
         return self.write(value)
 
     def write_short(self, value: int):
-        self.write(pack(self.endian + "h", value))
+        self.write(pack(f"{self.endian}h", value))
 
     def write_int(self, value: int):
-        self.write(pack(self.endian + "i", value))
+        self.write(pack(f"{self.endian}i", value))
 
     def write_long(self, value: int):
-        self.write(pack(self.endian + "q", value))
+        self.write(pack(f"{self.endian}q", value))
 
     def write_u_short(self, value: int):
-        self.write(pack(self.endian + "H", value))
+        self.write(pack(f"{self.endian}H", value))
 
     def write_u_int(self, value: int):
-        self.write(pack(self.endian + "I", value))
+        self.write(pack(f"{self.endian}I", value))
 
     def write_u_long(self, value: int):
-        self.write(pack(self.endian + "Q", value))
+        self.write(pack(f"{self.endian}Q", value))
 
     def write_float(self, value: float):
-        self.write(pack(self.endian + "f", value))
+        self.write(pack(f"{self.endian}f", value))
 
     def write_double(self, value: float):
-        self.write(pack(self.endian + "d", value))
+        self.write(pack(f"{self.endian}d", value))
 
     def write_boolean(self, value: bool):
-        self.write(pack(self.endian + "?", value))
+        self.write(pack(f"{self.endian}?", value))
 
     def write_string_to_null(self, value: str):
         self.write(value.encode("utf8", "surrogateescape"))

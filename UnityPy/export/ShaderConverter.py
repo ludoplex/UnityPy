@@ -46,15 +46,15 @@ def ConvertSerializedShader(m_Shader):
     return ConvertSerializedShaderParsedForm(m_Shader.m_ParsedForm, m_Shader.platforms, shaderPrograms)
 
 def ConvertSerializedShaderParsedForm(m_ParsedForm, platforms, shaderPrograms):
-    sb = []
+    sb = [
+        "Shader \"{0}\" {{\n".format(m_ParsedForm.m_Name),
+        ConvertSerializedProperties(m_ParsedForm.m_PropInfo),
+    ]
 
-    sb.append("Shader \"{0}\" {{\n".format(m_ParsedForm.m_Name))
-
-    sb.append(ConvertSerializedProperties(m_ParsedForm.m_PropInfo))
-
-    for m_SubShader in m_ParsedForm.m_SubShaders:
-        sb.append(ConvertSerializedSubShader(m_SubShader, platforms, shaderPrograms))
-
+    sb.extend(
+        ConvertSerializedSubShader(m_SubShader, platforms, shaderPrograms)
+        for m_SubShader in m_ParsedForm.m_SubShaders
+    )
     if m_ParsedForm.m_FallbackName:
         sb.append("Fall back \"{0}\"\n".format(m_ParsedForm.m_FallbackName))
 
@@ -65,17 +65,17 @@ def ConvertSerializedShaderParsedForm(m_ParsedForm, platforms, shaderPrograms):
     return "".join(sb)
 
 def ConvertSerializedSubShader(m_SubShader, platforms, shaderPrograms):
-    sb = []
+    sb = ["SubShader {\n"]
 
-    sb.append("SubShader {\n")
     if m_SubShader.m_LOD != 0:
         sb.append(" LOD {0}\n".format(m_SubShader.m_LOD))
 
     sb.append(ConvertSerializedTagMap(m_SubShader.m_Tags, 1))
 
-    for m_Passe in m_SubShader.m_Passes:
-        sb.append(ConvertSerializedPass(m_Passe, platforms, shaderPrograms))
-
+    sb.extend(
+        ConvertSerializedPass(m_Passe, platforms, shaderPrograms)
+        for m_Passe in m_SubShader.m_Passes
+    )
     sb.append("}\n")
     return "".join(sb)
 
@@ -101,30 +101,65 @@ def ConvertSerializedPass(m_Passe, platforms, shaderPrograms):
             sb.append(ConvertSerializedShaderState(m_Passe.m_State))
 
             if len(m_Passe.progVertex.m_SubPrograms) > 0:
-                sb.append("Program \"vp\" {\n")
-                sb.append(ConvertSerializedSubPrograms(m_Passe.progVertex.m_SubPrograms, platforms, shaderPrograms))
-                sb.append("}\n")
-
+                sb.extend(
+                    (
+                        "Program \"vp\" {\n",
+                        ConvertSerializedSubPrograms(
+                            m_Passe.progVertex.m_SubPrograms,
+                            platforms,
+                            shaderPrograms,
+                        ),
+                        "}\n",
+                    )
+                )
             if len(m_Passe.progFragment.m_SubPrograms) > 0:
-                sb.append("Program \"fp\" {\n")
-                sb.append(ConvertSerializedSubPrograms(m_Passe.progFragment.m_SubPrograms, platforms, shaderPrograms))
-                sb.append("}\n")
-
+                sb.extend(
+                    (
+                        "Program \"fp\" {\n",
+                        ConvertSerializedSubPrograms(
+                            m_Passe.progFragment.m_SubPrograms,
+                            platforms,
+                            shaderPrograms,
+                        ),
+                        "}\n",
+                    )
+                )
             if len(m_Passe.progGeometry.m_SubPrograms) > 0:
-                sb.append("Program \"gp\" {\n")
-                sb.append(ConvertSerializedSubPrograms(m_Passe.progGeometry.m_SubPrograms, platforms, shaderPrograms))
-                sb.append("}\n")
-
+                sb.extend(
+                    (
+                        "Program \"gp\" {\n",
+                        ConvertSerializedSubPrograms(
+                            m_Passe.progGeometry.m_SubPrograms,
+                            platforms,
+                            shaderPrograms,
+                        ),
+                        "}\n",
+                    )
+                )
             if len(m_Passe.progHull.m_SubPrograms) > 0:
-                sb.append("Program \"hp\" {\n")
-                sb.append(ConvertSerializedSubPrograms(m_Passe.progHull.m_SubPrograms, platforms, shaderPrograms))
-                sb.append("}\n")
-
+                sb.extend(
+                    (
+                        "Program \"hp\" {\n",
+                        ConvertSerializedSubPrograms(
+                            m_Passe.progHull.m_SubPrograms,
+                            platforms,
+                            shaderPrograms,
+                        ),
+                        "}\n",
+                    )
+                )
             if len(m_Passe.progDomain.m_SubPrograms) > 0:
-                sb.append("Program \"dp\" {\n")
-                sb.append(ConvertSerializedSubPrograms(m_Passe.progDomain.m_SubPrograms, platforms, shaderPrograms))
-                sb.append("}\n")
-
+                sb.extend(
+                    (
+                        "Program \"dp\" {\n",
+                        ConvertSerializedSubPrograms(
+                            m_Passe.progDomain.m_SubPrograms,
+                            platforms,
+                            shaderPrograms,
+                        ),
+                        "}\n",
+                    )
+                )
         sb.append("}\n")
 
     return "".join(sb)
@@ -154,11 +189,15 @@ def ConvertSerializedSubPrograms(m_SubPrograms, platforms, shaderPrograms):
                         if isTier:
                             sb.append("hw_tier{0:02} ".format(subProgram.m_ShaderHardwareTier))
 
-                        sb.append("\" {\n")
-                        sb.append(shaderPrograms[i].m_SubPrograms[subProgram.m_BlobIndex].Export())
-
-                        sb.append("\n}\n")
-
+                        sb.extend(
+                            (
+                                "\" {\n",
+                                shaderPrograms[i]
+                                .m_SubPrograms[subProgram.m_BlobIndex]
+                                .Export(),
+                                "\n}\n",
+                            )
+                        )
                     break
 
     return "".join(sb)
@@ -237,29 +276,24 @@ def ConvertSerializedShaderRTBlendState(rbBlend):
 def ConvertSerializedTagMap(m_Tags, intent: int):
     sb = []
     if len(m_Tags.tags) > 0:
-        sb.append(" "*intent)
-        sb.append("Tags { ")
-        for key, value in m_Tags.tags.items():
-            sb.append("\"{0}\" = \"{1}\" ".format(key, value))
+        sb.extend((" "*intent, "Tags { "))
+        sb.extend(
+            "\"{0}\" = \"{1}\" ".format(key, value)
+            for key, value in m_Tags.tags.items()
+        )
         sb.append("}\n")
 
     return "".join(sb)
 
 def ConvertSerializedProperties(m_PropInfo):
-    sb = []
+    sb = ["Properties {\n"]
 
-    sb.append("Properties {\n")
-    for m_Prop in m_PropInfo.m_Props:
-        sb.append(ConvertSerializedProperty(m_Prop))
-
+    sb.extend(ConvertSerializedProperty(m_Prop) for m_Prop in m_PropInfo.m_Props)
     sb.append("}\n")
     return "".join(sb)
 
 def ConvertSerializedProperty(m_Prop):
-    sb = []
-    for m_Attribute in m_Prop.m_Attributes:
-        sb.append("[{0}] ".format(m_Attribute))
-
+    sb = ["[{0}] ".format(m_Attribute) for m_Attribute in m_Prop.m_Attributes]
     sb.append("{0} (\"{1}\", ".format(m_Prop.m_Name, m_Prop.m_Description))
 
     if m_Prop.m_Type == SerializedPropertyType.kColor:
@@ -308,25 +342,31 @@ def CheckGpuProgramUsable(platform, programType):
     if platform == ShaderCompilerPlatform.kShaderCompPlatformGL:
         return programType == ShaderGpuProgramType.kShaderGpuProgramGLLegacy
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformD3D9:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramDX9VertexSM20
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX9VertexSM30
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM20
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM30 )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramDX9VertexSM20,
+            ShaderGpuProgramType.kShaderGpuProgramDX9VertexSM30,
+            ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM20,
+            ShaderGpuProgramType.kShaderGpuProgramDX9PixelSM30,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformXbox360:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramConsoleVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleFS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleHS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleDS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleGS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramConsoleVS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleFS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleHS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleDS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleGS,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformD3D11:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramDX11VertexSM40
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX11VertexSM50
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX11PixelSM40
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX11PixelSM50
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX11GeometrySM40
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX11GeometrySM50
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX11HullSM50
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX11DomainSM50 )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramDX11VertexSM40,
+            ShaderGpuProgramType.kShaderGpuProgramDX11VertexSM50,
+            ShaderGpuProgramType.kShaderGpuProgramDX11PixelSM40,
+            ShaderGpuProgramType.kShaderGpuProgramDX11PixelSM50,
+            ShaderGpuProgramType.kShaderGpuProgramDX11GeometrySM40,
+            ShaderGpuProgramType.kShaderGpuProgramDX11GeometrySM50,
+            ShaderGpuProgramType.kShaderGpuProgramDX11HullSM50,
+            ShaderGpuProgramType.kShaderGpuProgramDX11DomainSM50,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformGLES20:
         return programType == ShaderGpuProgramType.kShaderGpuProgramGLES
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformNaCl:
@@ -334,65 +374,87 @@ def CheckGpuProgramUsable(platform, programType):
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformFlash:
         raise NotImplementedError
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformD3D11_9x:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramDX10Level9Vertex
-            or programType == ShaderGpuProgramType.kShaderGpuProgramDX10Level9Pixel )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramDX10Level9Vertex,
+            ShaderGpuProgramType.kShaderGpuProgramDX10Level9Pixel,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformGLES3Plus:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramGLES31AEP
-            or programType == ShaderGpuProgramType.kShaderGpuProgramGLES31
-            or programType == ShaderGpuProgramType.kShaderGpuProgramGLES3 )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramGLES31AEP,
+            ShaderGpuProgramType.kShaderGpuProgramGLES31,
+            ShaderGpuProgramType.kShaderGpuProgramGLES3,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformPSP2:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramConsoleVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleFS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleHS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleDS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleGS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramConsoleVS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleFS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleHS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleDS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleGS,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformPS4:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramConsoleVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleFS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleHS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleDS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleGS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramConsoleVS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleFS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleHS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleDS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleGS,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformXboxOne:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramConsoleVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleFS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleHS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleDS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleGS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramConsoleVS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleFS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleHS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleDS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleGS,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformPSM:
         raise NotImplementedError
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformMetal:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramMetalVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramMetalVS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramMetalVS,
+            ShaderGpuProgramType.kShaderGpuProgramMetalVS,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformOpenGLCore:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramGLCore32
-            or programType == ShaderGpuProgramType.kShaderGpuProgramGLCore41
-            or programType == ShaderGpuProgramType.kShaderGpuProgramGLCore43 )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramGLCore32,
+            ShaderGpuProgramType.kShaderGpuProgramGLCore41,
+            ShaderGpuProgramType.kShaderGpuProgramGLCore43,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformN3DS:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramConsoleVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleFS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleHS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleDS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleGS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramConsoleVS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleFS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleHS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleDS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleGS,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformWiiU:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramConsoleVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleFS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleHS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleDS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleGS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramConsoleVS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleFS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleHS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleDS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleGS,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformVulkan:
         return programType == ShaderGpuProgramType.kShaderGpuProgramSPIRV
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformSwitch:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramConsoleVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleFS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleHS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleDS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleGS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramConsoleVS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleFS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleHS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleDS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleGS,
+        ]
     elif platform == ShaderCompilerPlatform.kShaderCompPlatformXboxOneD3D12:
-        return ( programType == ShaderGpuProgramType.kShaderGpuProgramConsoleVS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleFS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleHS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleDS
-            or programType == ShaderGpuProgramType.kShaderGpuProgramConsoleGS )
+        return programType in [
+            ShaderGpuProgramType.kShaderGpuProgramConsoleVS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleFS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleHS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleDS,
+            ShaderGpuProgramType.kShaderGpuProgramConsoleGS,
+        ]
     else:
         raise NotImplementedError
 
@@ -449,11 +511,7 @@ class ShaderProgram:
         subProgramCapacity = reader.read_int()
         self.m_SubPrograms = []
 
-        if version >=(2019, 3): # 2019.3 and up
-            entrySize = 12
-        else:
-            entrySize = 8
-
+        entrySize = 12 if version >=(2019, 3) else 8
         for i in range(subProgramCapacity):
             reader.Position = 4 + i * entrySize
             offset = reader.read_int()
@@ -490,16 +548,16 @@ class ShaderSubProgram:
         m_KeywordSize = reader.read_int()
         self.m_Keywords = []
 
-        for i in range(m_KeywordSize):
-            self.m_Keywords.append(reader.read_aligned_string())
-
+        self.m_Keywords.extend(
+            reader.read_aligned_string() for _ in range(m_KeywordSize)
+        )
         if 201806140 <= self.m_Version < 202012090:
             m_LocalKeywordsSize = reader.read_int()
             self.m_LocalKeywords = []
 
-            for i in range(m_LocalKeywordsSize):
-                self.m_LocalKeywords.append(reader.read_aligned_string())
-
+            self.m_LocalKeywords.extend(
+                reader.read_aligned_string() for _ in range(m_LocalKeywordsSize)
+            )
         self.m_ProgramCode = reader.read_byte_array()
         reader.align_stream()
 
@@ -508,16 +566,12 @@ class ShaderSubProgram:
 
         if len(self.m_Keywords) > 0:
             sb.append("Keywords { ")
-            for keyword in self.m_Keywords:
-                sb.append("\"{0}\" ".format(keyword))
-
+            sb.extend("\"{0}\" ".format(keyword) for keyword in self.m_Keywords)
             sb.append("}\n")
 
         if hasattr(self, 'm_LocalKeywords') and len(self.m_LocalKeywords) > 0:
             sb.append("Local Keywords { ")
-            for keyword in self.m_LocalKeywords:
-                sb.append("\"{0}\" ".format(keyword))
-
+            sb.extend("\"{0}\" ".format(keyword) for keyword in self.m_LocalKeywords)
             sb.append("}\n")
 
         sb.append("\"")

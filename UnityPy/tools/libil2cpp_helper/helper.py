@@ -41,10 +41,9 @@ class Version:
             spec.append(f"Min={Min}")
         if Max != 99:
             spec.append(f"Max={Max}")
-        newclass = type(
+        return type(
             f"Version ({', '.join(spec)})", (Version,), {"Min": Min, "Max": Max}
         )
-        return newclass
 
     @classmethod
     def check_compatiblity(cls, version):
@@ -75,7 +74,7 @@ class MetaDataClass:
     def write_to(self, writer: BytesIO):
         writer.write(
             pack(
-                "<" + self.parseString,
+                f"<{self.parseString}",
                 (self.get(key) for key in self.__annotations__.keys()),
             )
         )
@@ -98,7 +97,7 @@ class MetaDataClass:
             size += getattr(clz, "__size")
             parseString.append(getattr(clz, "__format"))
 
-        newclass = type(
+        return type(
             f"{cls.__name__} - V{version:.1f}",
             (MetaDataClass,),
             {
@@ -108,4 +107,3 @@ class MetaDataClass:
                 "parseString": "".join(parseString),
             },
         )
-        return newclass

@@ -131,11 +131,7 @@ class VertexData:
             self.m_Channels = [ChannelInfo(reader) for _ in range(m_ChannelsSize)]
 
         if version < (5,):  # 5.0 down
-            if version < (4,):  # 4.0 down
-                m_StreamsSize = 4
-            else:
-                m_StreamsSize = reader.read_int()
-
+            m_StreamsSize = 4 if version < (4,) else reader.read_int()
             self.m_Streams = [StreamInfo(reader=reader) for _ in range(m_StreamsSize)]
 
             if version < (4,):  # 4.0 down
@@ -165,11 +161,6 @@ class VertexData:
 
             if version < (4,):  # 4.0 down
                 raise Exception("Unsupported version")
-        else:  # 5.0 and up
-            # for stream in self.m_Streams:
-            #    stream.save(writer)
-            pass
-
         writer.write_int(len(self.m_DataSize))
         writer.write_bytes(self.m_DataSize)
         writer.align_stream()
@@ -208,8 +199,7 @@ class VertexData:
 
     def GetChannels(self):
         self.m_Channels = []  # ChannelInfo[6]
-        for i in range(6):
-            self.m_Channels.append(ChannelInfo(self.reader))
+        self.m_Channels.extend(ChannelInfo(self.reader) for _ in range(6))
         for s, m_Stream in enumerate(self.m_Streams):
             channelMask = bytearray(m_Stream.channelMask)  # BitArray
             offset = 0

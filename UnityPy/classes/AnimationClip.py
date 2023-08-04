@@ -14,9 +14,7 @@ except ImportError:
 
 
 def uint(num):
-    if num < 0 or num > 4294967295:
-        return num % 4294967296
-    return num
+    return num % 4294967296 if num < 0 or num > 4294967295 else num
 
 
 class Keyframe:
@@ -103,8 +101,8 @@ class PackedFloatVector:
             numChunks = self.m_NumItems // itemCountInChunk
         end = int(chunkStride * numChunks / 4)
         data = []
-        for index in range(0, end, chunkStride // 4):
-            for i in range(itemCountInChunk):
+        for _ in range(0, end, chunkStride // 4):
+            for _ in range(itemCountInChunk):
                 x = 0  # uint
                 bits = 0
                 while bits < self.m_BitSize:
@@ -182,7 +180,7 @@ class PackedQuatVector:
         indexPos = 0
         bitPos = 0
 
-        for i in range(self.m_NumItems):
+        for _ in range(self.m_NumItems):
             flags = 0
             bits = 0
             while bits < 3:

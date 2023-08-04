@@ -98,7 +98,7 @@ def check_nodes(nodes: List[Union[dict, TypeTreeNode]]) -> List[TypeTreeNode]:
         a list of TypeTreeNode-type nodes
     """
     if isinstance(nodes, list):
-        if len(nodes) == 0:
+        if not nodes:
             raise ValueError("not enough nodes")
         if isinstance(nodes[0], TypeTreeNode):
             return nodes
@@ -125,10 +125,14 @@ def get_nodes(nodes: List[TypeTreeNode], index: int) -> list:
         A list of nodes
     """
     level = nodes[index].m_Level
-    for i, node in enumerate(nodes[index + 1 :], index + 1):
-        if node.m_Level <= level:
-            return nodes[index:i]
-    return nodes[index:]
+    return next(
+        (
+            nodes[index:i]
+            for i, node in enumerate(nodes[index + 1 :], index + 1)
+            if node.m_Level <= level
+        ),
+        nodes[index:],
+    )
 
 
 def read_typetree(
@@ -215,24 +219,22 @@ def read_value(nodes: List[TypeTreeNode], reader: EndianBinaryReader, i: c_uint3
         size = reader.read_int()
         value = reader.read_bytes(size)
         i.value += 2  # Size == int, Data(typ) == char/uint8
-    else:
-        # Vector
-        if i.value < len(nodes) - 1 and nodes[i.value + 1].m_Type == "Array":
-            if (nodes[i.value + 1].m_MetaFlag & kAlignBytes) != 0:
-                align = True
-            vector = get_nodes(nodes, i.value)
-            i.value += len(vector) - 1
-            size = reader.read_int()
-            value = [read_value(vector, reader, c_uint32(3)) for _ in range(size)]
-        else:  # Class
-            clz = get_nodes(nodes, i.value)
-            i.value += len(clz) - 1
-            value = {}
-            j = c_uint32(1)
-            while j.value < len(clz):
-                clz_node = clz[j.value]
-                value[clz_node.m_Name] = read_value(clz, reader, j)
-                j.value += 1
+    elif i.value < len(nodes) - 1 and nodes[i.value + 1].m_Type == "Array":
+        if (nodes[i.value + 1].m_MetaFlag & kAlignBytes) != 0:
+            align = True
+        vector = get_nodes(nodes, i.value)
+        i.value += len(vector) - 1
+        size = reader.read_int()
+        value = [read_value(vector, reader, c_uint32(3)) for _ in range(size)]
+    else:  # Class
+        clz = get_nodes(nodes, i.value)
+        i.value += len(clz) - 1
+        j = c_uint32(1)
+        value = {}
+        while j.value < len(clz):
+            clz_node = clz[j.value]
+            value[clz_node.m_Name] = read_value(clz, reader, j)
+            j.value += 1
 
     if align:
         reader.align_stream()
@@ -324,19 +326,29 @@ def read_value_str(
         second = get_nodes(map_, 4 + len(first))
         size = reader.read_int()
         append = False
-        sb.append(
-            "{0}{1} {2}\r\n".format("\t" * node.m_Level, node.m_Type, node.m_Name)
+        sb.extend(
+            (
+                "{0}{1} {2}\r\n".format(
+                    "\t" * node.m_Level, node.m_Type, node.m_Name
+                ),
+                "{0}{1} {2}\r\n".format(
+                    "\t" * (node.m_Level + 1), "Array", "Array"
+                ),
+            )
         )
-        sb.append("{0}{1} {2}\r\n".format("\t" * (node.m_Level + 1), "Array", "Array"))
         sb.append(
             "{0}{1} {2} = {3}\r\n".format(
                 "\t" * (node.m_Level + 1), "int", "size", size
             )
         )
         for j in range(size):
-            sb.append("{0}[{1}]\r\n".format("\t" * (node.m_Level + 2), j))
-            sb.append(
-                "{0}{1} {2}\r\n".format("\t" * (node.m_Level + 2), "pair", "data")
+            sb.extend(
+                (
+                    "{0}[{1}]\r\n".format("\t" * (node.m_Level + 2), j),
+                    "{0}{1} {2}\r\n".format(
+                        "\t" * (node.m_Level + 2), "pair", "data"
+                    ),
+                )
             )
             read_value_str(sb, first, reader, c_uint32(0))
             read_value_str(sb, second, reader, c_uint32(0))
@@ -361,12 +373,15 @@ def read_value_str(
             vector = get_nodes(nodes, i.value)
             i.value += len(vector) - 1
             size = reader.read_int()
-            append = False
-            sb.append(
-                "{0}{1} {2}\r\n".format("\t" * node.m_Level, node.m_Type, node.m_Name)
-            )
-            sb.append(
-                "{0}{1} {2}\r\n".format("\t" * (node.m_Level + 1), "Array", "Array")
+            sb.extend(
+                (
+                    "{0}{1} {2}\r\n".format(
+                        "\t" * node.m_Level, node.m_Type, node.m_Name
+                    ),
+                    "{0}{1} {2}\r\n".format(
+                        "\t" * (node.m_Level + 1), "Array", "Array"
+                    ),
+                )
             )
             sb.append(
                 "{0}{1} {2} = {3}\r\n".format(
@@ -381,7 +396,6 @@ def read_value_str(
             clz = get_nodes(nodes, i.value)
             i.value += len(clz) - 1
             j = c_uint32(1)
-            append = False
             sb.append(
                 "{0}{1} {2}\r\n".format("\t" * node.m_Level, node.m_Type, node.m_Name)
             )
@@ -389,6 +403,7 @@ def read_value_str(
                 read_value_str(sb, clz, reader, j)
                 j.value += 1
 
+        append = False
     if append:
         sb.append(
             "{0}{1} {2} = {3}\r\n".format(
@@ -501,24 +516,22 @@ def write_value(
         writer.write_int(len(value))
         writer.write_bytes(value)
         i.value += 2  # Size == int, Data(typ) == char/uint8
-    else:
-        # Vector
-        if i.value < len(nodes) - 1 and nodes[i.value + 1].m_Type == "Array":
-            if (nodes[i.value + 1].m_MetaFlag & kAlignBytes) != 0:
-                align = True
-            vector = get_nodes(nodes, i.value)
-            i.value += len(vector) - 1
-            writer.write_int(len(value))
-            for val in value:
-                write_value(val, vector, writer, c_uint32(3))
-        else:  # Class
-            clz = get_nodes(nodes, i.value)
-            i.value += len(clz) - 1
-            j = c_uint32(1)
-            while j.value < len(clz):
-                val = value[clz[j.value].m_Name]
-                write_value(val, clz, writer, j)
-                j.value += 1
+    elif i.value < len(nodes) - 1 and nodes[i.value + 1].m_Type == "Array":
+        if (nodes[i.value + 1].m_MetaFlag & kAlignBytes) != 0:
+            align = True
+        vector = get_nodes(nodes, i.value)
+        i.value += len(vector) - 1
+        writer.write_int(len(value))
+        for val in value:
+            write_value(val, vector, writer, c_uint32(3))
+    else:  # Class
+        clz = get_nodes(nodes, i.value)
+        i.value += len(clz) - 1
+        j = c_uint32(1)
+        while j.value < len(clz):
+            val = value[clz[j.value].m_Name]
+            write_value(val, clz, writer, j)
+            j.value += 1
 
     if align:
         writer.align_stream()

@@ -133,9 +133,7 @@ def get_image_from_texture2d(texture_2d, flip=True) -> Image.Image:
         image_data, texture_2d.m_Width, texture_2d.m_Height, *selection[1:]
     )
 
-    if img and flip:
-        return img.transpose(Image.FLIP_TOP_BOTTOM)
-    return img
+    return img.transpose(Image.FLIP_TOP_BOTTOM) if img and flip else img
 
 
 def swap_bytes_for_xbox(image_data: bytes, build_target: BuildTarget) -> bytes:

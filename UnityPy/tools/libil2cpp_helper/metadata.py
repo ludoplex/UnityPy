@@ -188,9 +188,7 @@ class Metadata:
         self.reader.seek(addr)
         if issubclass(clz, (MetaDataClass, Il2CppRGCTXDefinition)):
             return [clz(self.reader) for _ in range(count)]
-        elif issubclass(clz, CustomIntWrapper):
-            return [clz.read_from(self.reader) for _ in range(count)]
-        elif clz == Il2CppRGCTXDefinition:
+        elif issubclass(clz, CustomIntWrapper) or clz == Il2CppRGCTXDefinition:
             return [clz.read_from(self.reader) for _ in range(count)]
         else:
             raise ValueError("Invalid clz type")
@@ -214,7 +212,7 @@ class Metadata:
 
     def GetStringFromIndex(self, index: int) -> str:
         result = self.stringCache.get(index, None)
-        if result == None:
+        if result is None:
             result = self.ReadStringToNull(self.header.stringOffset + index)
             self.stringCache[index] = result
         return result
@@ -270,12 +268,10 @@ class Metadata:
         return (index & 0xE0000000) >> 29
 
     def GetDecodedMethodIndex(self, index: int):
-        if self.Version >= 27:
-            return (index & 0x1FFFFFFE) >> 1
-        return index & 0x1FFFFFFF
+        return (index & 0x1FFFFFFE) >> 1 if self.Version >= 27 else index & 0x1FFFFFFF
 
-    def SizeOf(typ) -> int:
-        return typ.size
+    def SizeOf(self) -> int:
+        return self.size
 
     def ReadString(self, numChars: int) -> str:
         start = self.reader.tell()

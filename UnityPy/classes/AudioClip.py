@@ -22,7 +22,7 @@ class AudioClip(NamedObject):
                 tsize = self.m_Size + 4 - self.m_Size % 4 if (self.m_Size % 4 != 0) else self.m_Size
                 if reader.byte_size + reader.byte_start - reader.Position != tsize:
                     self.m_Offset = reader.read_u_int()
-                    self.m_Source = self.assets_file.full_name + ".resS"
+                    self.m_Source = f"{self.assets_file.full_name}.resS"
             else:
                 self.m_Size = reader.read_int()
 

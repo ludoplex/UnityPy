@@ -14,10 +14,7 @@ class Color:
         self.A = a
 
     def __eq__(self, other):
-        if isinstance(other, Color):
-            return self.__dict__ == other.__dict__
-        else:
-            return False
+        return self.__dict__ == other.__dict__ if isinstance(other, Color) else False
 
     def __add__(self, other):
         return Color(

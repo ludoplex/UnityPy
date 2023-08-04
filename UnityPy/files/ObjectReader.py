@@ -82,7 +82,7 @@ class ObjectReader:
             if self.serialized_type:
                 self.serialized_type.script_type_index = script_type_index
 
-        if header.version == 15 or header.version == 16:
+        if header.version in [15, 16]:
             self.stripped = reader.read_byte()
 
     def write(
@@ -130,7 +130,7 @@ class ObjectReader:
         if 11 <= header.version < 17:
             writer.write_short(self.serialized_type.script_type_index)
 
-        if header.version == 15 or header.version == 16:
+        if header.version in [15, 16]:
             writer.write_byte(self.stripped)
 
     def set_raw_data(self, data):
@@ -157,19 +157,16 @@ class ObjectReader:
         self.reader.Position = self.byte_start
 
     def read(self, return_typetree_on_error: bool = True):
-        cls = getattr(classes, self.type.name, None)
-
         obj = None
-        if cls:
+        if cls := getattr(classes, self.type.name, None):
             try:
                 obj = cls(self)
             except Exception as e:
-                if return_typetree_on_error:
-                    print(f"Error during the parsing of object {self.path_id}")
-                    print(e)
-                    print("Returning the typetree")
-                else:
+                if not return_typetree_on_error:
                     raise e
+                print(f"Error during the parsing of object {self.path_id}")
+                print(e)
+                print("Returning the typetree")
         if not obj:
             obj = self.read_typetree(wrap=True)
         self._read_until = self.reader.Position
@@ -183,7 +180,7 @@ class ObjectReader:
             return getattr(self.reader, item)
 
     def __repr__(self):
-        return "<%s %s>" % (self.__class__.__name__, self.type.name)
+        return f"<{self.__class__.__name__} {self.type.name}>"
 
     ###################################################
     #

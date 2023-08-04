@@ -132,11 +132,10 @@ def get_triangles(m_Sprite):
 
             indexReader.Position = subMesh.firstByte
 
-            for _ in range(subMesh.indexCount):
-                points.append(
-                    vertices[indexReader.read_u_short() - subMesh.firstVertex]
-                )
-
+            points.extend(
+                vertices[indexReader.read_u_short() - subMesh.firstVertex]
+                for _ in range(subMesh.indexCount)
+            )
     # normalize the points
     #  shift the whole point matrix into the positive space
     #  multiply them with a factor to scale them to the image

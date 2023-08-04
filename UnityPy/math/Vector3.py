@@ -72,23 +72,23 @@ class Vector3:
     def One():
         return Vector3(1, 1, 1)
 
-    def __add__(a, b):
-        return Vector3(a.X + b.X, a.Y + b.Y, a.Z + b.Z)
+    def __add__(self, b):
+        return Vector3(self.X + b.X, self.Y + b.Y, self.Z + b.Z)
 
-    def __sub__(a, b):
-        return Vector3(a.X - b.X, a.Y - b.Y, a.Z - b.Z)
+    def __sub__(self, b):
+        return Vector3(self.X - b.X, self.Y - b.Y, self.Z - b.Z)
 
-    def __mul__(a, d):
-        return Vector3(a.X * d, a.Y * d, a.Z * d)
+    def __mul__(self, d):
+        return Vector3(self.X * d, self.Y * d, self.Z * d)
 
-    def __div__(a, d):
-        return Vector3(a.X / d, a.Y / d, a.Z / d)
+    def __div__(self, d):
+        return Vector3(self.X / d, self.Y / d, self.Z / d)
 
-    def __eq__(lhs, rhs):
-        return (lhs - rhs).LengthSquared() < kEpsilon
+    def __eq__(self, rhs):
+        return (self - rhs).LengthSquared() < kEpsilon
 
-    def __ne__(lhs, rhs):
-        return not (lhs == rhs)
+    def __ne__(self, rhs):
+        return not self == rhs
 
     def Vector2(self):
         from .Vector2 import Vector2

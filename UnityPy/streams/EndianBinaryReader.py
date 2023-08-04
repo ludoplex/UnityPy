@@ -90,40 +90,40 @@ class EndianBinaryReader:
         return b""
 
     def read_byte(self) -> int:
-        return unpack(self.endian + "b", self.read(1))[0]
+        return unpack(f"{self.endian}b", self.read(1))[0]
 
     def read_u_byte(self) -> int:
-        return unpack(self.endian + "B", self.read(1))[0]
+        return unpack(f"{self.endian}B", self.read(1))[0]
 
     def read_bytes(self, num) -> bytes:
         return self.read(num)
 
     def read_short(self) -> int:
-        return unpack(self.endian + "h", self.read(2))[0]
+        return unpack(f"{self.endian}h", self.read(2))[0]
 
     def read_int(self) -> int:
-        return unpack(self.endian + "i", self.read(4))[0]
+        return unpack(f"{self.endian}i", self.read(4))[0]
 
     def read_long(self) -> int:
-        return unpack(self.endian + "q", self.read(8))[0]
+        return unpack(f"{self.endian}q", self.read(8))[0]
 
     def read_u_short(self) -> int:
-        return unpack(self.endian + "H", self.read(2))[0]
+        return unpack(f"{self.endian}H", self.read(2))[0]
 
     def read_u_int(self) -> int:
-        return unpack(self.endian + "I", self.read(4))[0]
+        return unpack(f"{self.endian}I", self.read(4))[0]
 
     def read_u_long(self) -> int:
-        return unpack(self.endian + "Q", self.read(8))[0]
+        return unpack(f"{self.endian}Q", self.read(8))[0]
 
     def read_float(self) -> float:
-        return unpack(self.endian + "f", self.read(4))[0]
+        return unpack(f"{self.endian}f", self.read(4))[0]
 
     def read_double(self) -> float:
-        return unpack(self.endian + "d", self.read(8))[0]
+        return unpack(f"{self.endian}d", self.read(8))[0]
 
     def read_boolean(self) -> bool:
-        return bool(unpack(self.endian + "?", self.read(1))[0])
+        return bool(unpack(f"{self.endian}?", self.read(1))[0])
 
     def read_string(self, size=None, encoding="utf8") -> str:
         if size is None:
@@ -486,7 +486,6 @@ class EndianBinaryReader_Streamable(EndianBinaryReader):
 
     def dispose(self):
         self.stream.close()
-        pass
 
 
 class EndianBinaryReader_Streamable_LittleEndian(EndianBinaryReader_Streamable):

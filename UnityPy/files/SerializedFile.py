@@ -187,9 +187,7 @@ class SerializedFile(File.File):
 
     @property
     def files(self):
-        if self.objects:
-            return self.objects
-        return {}
+        return self.objects if self.objects else {}
 
     @files.setter
     def files(self, value):
@@ -322,8 +320,8 @@ class SerializedFile(File.File):
             # weird case, but apparently can happen?
             # check "cant read Texture2D by 2020.3.13 f1 AssetBundle #77" for details
             string_version = self.parent.version_engine
-            if not string_version or string_version == "0.0.0":
-                string_version = config.get_fallback_version()
+        if not string_version or string_version == "0.0.0":
+            string_version = config.get_fallback_version()
         build_type = re.findall(r"([^\d.])", string_version)
         self.build_type = BuildType(build_type[0] if build_type else "")
         version_split = re.split(r"\D", string_version)
@@ -358,8 +356,7 @@ class SerializedFile(File.File):
             if self.header.version != 3:
                 type_tree_node.m_MetaFlag = self.reader.read_int()
 
-            children_count = self.reader.read_int()
-            if children_count:
+            if children_count := self.reader.read_int():
                 level_stack.append([level + 1, children_count])
         return type_tree
 
@@ -398,7 +395,7 @@ class SerializedFile(File.File):
                 m_Type=read_string(string_buffer_reader, raw_node[3]),
                 m_Name=read_string(string_buffer_reader, raw_node[4]),
             )
-            for i, raw_node in enumerate(node_struct.iter_unpack(struct_data))
+            for raw_node in node_struct.iter_unpack(struct_data)
         ]
 
         return type_tree, string_buffer_reader.bytes
@@ -502,7 +499,7 @@ class SerializedFile(File.File):
                 # reader.Position = header.file_size - header.metadata_size
                 # so data follows right after this header -> after 32
                 writer.write_u_int(data_offset)
-                writer.write_boolean(">" == header.endian)
+                writer.write_boolean(header.endian == ">")
                 writer.write_bytes(header.reserved)
             else:
                 # old header
@@ -510,7 +507,7 @@ class SerializedFile(File.File):
                 writer.write_u_int(0)
                 writer.write_u_int(header.version)
                 writer.write_u_int(0)
-                writer.write_boolean(">" == header.endian)
+                writer.write_boolean(header.endian == ">")
                 writer.write_bytes(header.reserved)
                 writer.write_u_int(metadata_size)
                 writer.write_long(file_size)
@@ -531,7 +528,7 @@ class SerializedFile(File.File):
             # so data follows right after this header -> after 32
             writer.write_u_int(32)
             writer.write_bytes(data_writer.bytes)
-            writer.write_boolean(">" == header.endian)
+            writer.write_boolean(header.endian == ">")
             writer.write_bytes(meta_writer.bytes)
 
         return writer.bytes

@@ -94,6 +94,6 @@ def test_save():
 
 if __name__ == "__main__":
     for x in list(locals()):
-        if str(x)[:4] == "test":
+        if str(x).startswith("test"):
             locals()[x]()
     input("All Tests Passed")

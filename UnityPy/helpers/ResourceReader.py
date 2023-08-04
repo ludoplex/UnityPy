@@ -40,8 +40,8 @@ def get_resource_data(*args):
                 reader = environment.get_cab(possible_name)
                 if reader:
                     break
-            if not reader:
-                raise FileNotFoundError(f"Resource file {basename} not found")
+        if not reader:
+            raise FileNotFoundError(f"Resource file {basename} not found")
     elif len(args) == 3:
         reader, offset, size = args
     else:

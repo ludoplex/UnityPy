@@ -58,8 +58,10 @@ class Object(object):
                 return {
                     key: class_to_dict(val)
                     for key, val in value.__dict__.items()
-                    if not isinstance(value, (types.FunctionType, types.MethodType))
-                    and not key in ["type_tree", "assets_file"]
+                    if not isinstance(
+                        value, (types.FunctionType, types.MethodType)
+                    )
+                    and key not in ["type_tree", "assets_file"]
                 }
             else:
                 return value
@@ -93,7 +95,7 @@ class Object(object):
         """
         If item not found in __dict__, read type_tree and check if it is in there.
         """
-        if name == "type_tree" or self.type_tree == None:
+        if name == "type_tree" or self.type_tree is None:
             old_pos = self.reader.Position
             self.read_typetree()
             self.reader.Position = old_pos
@@ -156,7 +158,7 @@ class NodeHelper:
                 if isinstance(val, list)
                 else {"m_PathID": val.path_id, "m_FileID": val.file_id}
                 if isinstance(val, PPtr)
-                else [x for x in val]
+                else list(val)
                 if isinstance(val, (bytearray, bytes))
                 else val
             )
@@ -173,8 +175,7 @@ class NodeHelper:
         return self.__dict__.keys()
 
     def __repr__(self):
-        name = getattr(self, "m_Name", None)
-        if name:
+        if name := getattr(self, "m_Name", None):
             return f"<NodeHelper name={name}>"
         else:
             return "<NodeHelper>"

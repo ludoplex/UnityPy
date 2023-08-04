@@ -17,6 +17,6 @@ class AssetBundle(NamedObject):
         container_size = reader.read_int()
         self.m_Container = {}
         # TODO - m_Container is a multi-dict, multiple values can have the same key
-        for i in range(container_size):
+        for _ in range(container_size):
             key = reader.read_aligned_string()
             self.m_Container[key] = AssetInfo(reader)

@@ -92,8 +92,7 @@ class Environment:
             parent = self
 
         if isinstance(file, str):
-            split_match = reSplit.match(file)
-            if split_match:
+            if split_match := reSplit.match(file):
                 basepath, basename = split_match.groups()
                 file = []
                 for i in range(0, 999):
@@ -127,7 +126,7 @@ class Environment:
             f = ImportHelper.parse_file(
                 reader, self, name=stream_name, typ=typ, is_dependency=is_dependency
             )
-        
+
         if isinstance(f, (SerializedFile, EndianBinaryReader)):
             self.register_cab(stream_name, f)
 
@@ -169,7 +168,7 @@ class Environment:
                 # serialized file
                 if getattr(item, "is_dependency", False):
                     return []
-                return [val for val in item.objects.values()]
+                return list(item.objects.values())
 
             elif getattr(item, "files", None):  # WebBundle and BundleFile
                 # bundle
@@ -255,8 +254,7 @@ class Environment:
         """
         split_files = []
         for path in assets:
-            splitMatch = reSplit.match(path)
-            if splitMatch:
+            if splitMatch := reSplit.match(path):
                 basepath, basename = splitMatch.groups()
 
                 if basepath in split_files:
@@ -294,8 +292,7 @@ class Environment:
             The file if it was found, otherwise None.
         """
         simple_name = simplify_name(name)
-        cab = self.get_cab(simple_name)
-        if cab:
+        if cab := self.get_cab(simple_name):
             return cab
 
         if len(self.local_files) == 0 and self.path:
@@ -310,8 +307,7 @@ class Environment:
         else:
             raise FileNotFoundError(f"File {name} not found in {self.path}")
 
-        f = self.load_file(fp, name=name, is_dependency=is_dependency)
-        return f
+        return self.load_file(fp, name=name, is_dependency=is_dependency)
 
 
 def simplify_name(name: str) -> str:

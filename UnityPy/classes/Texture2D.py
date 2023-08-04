@@ -19,12 +19,7 @@ class Texture2D(Texture):
         if img is None:
             raise Exception("No image provided")
 
-        if (
-            isinstance(img, str)
-            or isinstance(img, BufferedIOBase)
-            or isinstance(img, RawIOBase)
-            or isinstance(img, IOBase)
-        ):
+        if isinstance(img, (str, BufferedIOBase, RawIOBase, IOBase)):
             img = Image.open(img)
 
         img_data, tex_format = Texture2DConverter.image_to_texture2d(

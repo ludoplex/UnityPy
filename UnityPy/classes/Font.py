@@ -17,15 +17,12 @@ class Font(NamedObject):
             self.m_CharacterPadding = reader.read_int()
             self.m_ConvertCase = reader.read_int()
             CharacterRects_size = reader.read_int()
-            for i in range(CharacterRects_size):
+            for _ in range(CharacterRects_size):
                 reader.Position += 44  # CharacterInfo data 41
             KerningValues_size = reader.read_int()
-            for i in range(KerningValues_size):
+            for _ in range(KerningValues_size):
                 reader.Position += 8
             self.m_PixelScale = reader.read_float()
-            FontData_size = reader.read_int()
-            if FontData_size > 0:
-                self.m_FontData = reader.read_bytes(FontData_size)
         else:
             self.m_AsciiStartOffset = reader.read_int()
 
@@ -38,7 +35,7 @@ class Font(NamedObject):
 
             if version[:1] <= (3,):
                 PerCharacterKerning_size = reader.read_int()
-                for i in range(PerCharacterKerning_size):
+                for _ in range(PerCharacterKerning_size):
                     first = reader.read_int()
                     second = reader.read_float()
             else:
@@ -49,7 +46,7 @@ class Font(NamedObject):
             self.m_DefaultMaterial = PPtr(reader)
 
             CharacterRects_size = reader.read_int()
-            for i in range(CharacterRects_size):
+            for _ in range(CharacterRects_size):
                 index = reader.read_int()
                 # Rectf uv
                 uvx = reader.read_float()
@@ -70,7 +67,7 @@ class Font(NamedObject):
             self.m_Texture = PPtr(reader)
 
             KerningValues_size = reader.read_int()
-            for i in range(KerningValues_size):
+            for _ in range(KerningValues_size):
                 pairfirst = reader.read_short()
                 pairsecond = reader.read_short()
                 second = reader.read_float()
@@ -80,6 +77,6 @@ class Font(NamedObject):
                 reader.align_stream()
             else:
                 self.m_PixelScale = reader.read_float()
-            FontData_size = reader.read_int()
-            if FontData_size > 0:
-                self.m_FontData = reader.read_bytes(FontData_size)
+        FontData_size = reader.read_int()
+        if FontData_size > 0:
+            self.m_FontData = reader.read_bytes(FontData_size)

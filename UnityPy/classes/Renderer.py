@@ -13,14 +13,13 @@ class Renderer(Component):
     def __init__(self, reader):
         super().__init__(reader=reader)
         version = self.version
+        self.m_Enabled = reader.read_boolean()
         if version < (5,):  # 5.0 down
-            self.m_Enabled = reader.read_boolean()
             self.m_CastShadows = reader.read_boolean()
             self.m_ReceiveShadows = reader.read_boolean()
             self.m_LightmapIndex = reader.read_byte()
         else:  # 5.0 and up
-            if version >= (5, 4):  # 5.4 and up
-                self.m_Enabled = reader.read_boolean()
+            if version >= (5, 4):
                 self.m_CastShadows = reader.read_byte()
                 self.m_ReceiveShadows = reader.read_byte()
                 if version[:2] > (2017, 2):  # 2017.2 and up
@@ -32,14 +31,11 @@ class Renderer(Component):
                     self.m_RayTracingMode = reader.read_byte()
                 if version >= (2020,):  # 2020.1 and up
                     self.m_RayTraceProcedural = reader.read_byte()
-                reader.align_stream()
             else:
-                self.m_Enabled = reader.read_boolean()
                 reader.align_stream()
                 self.m_CastShadows = reader.read_byte()
                 self.m_ReceiveShadows = reader.read_boolean()
-                reader.align_stream()
-
+            reader.align_stream()
             if version >= (2018,):  # 2018 and up
                 self.m_RenderingLayerMask = reader.read_u_int()
 
